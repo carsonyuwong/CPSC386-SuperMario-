@@ -8,15 +8,15 @@ class Settings():
 
         self.level_map = [
         '                            ',
+        '       XXXXX                ',
+        '                            ',
+        '                 XXXXX      ',
         '                            ',
         '                            ',
+        '                    XXXX    ',
+        '           XX               ',
         '                            ',
-        '                            ',
-        '                            ',
-        '                            ',
-        '                            ',
-        '                            ',
-        '                            ',
+        '  P                         ',
         'XXXXXXXX  XXXXXX  XX  XXXX  ']
 
         self.tile_size = 64

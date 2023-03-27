@@ -6,6 +6,7 @@ from tiles import Tile
 from level import Level
 import sys
 
+
 class Game:
     def __init__(self):
         pg.init()
