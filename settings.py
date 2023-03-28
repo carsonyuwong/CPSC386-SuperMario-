@@ -9,15 +9,15 @@ class Settings():
         self.level_map = [
         '                            ',
         '       XXXXX                ',
-        '                            ',
-        '                 XXXXX      ',
-        '                            ',
-        '                            ',
+        '                 X          ',
+        '             X   XXXXX      ',
+        '             X         X   X',
+        '                          X ',
         '                    XXXX    ',
-        '           XX               ',
-        '                            ',
+        '           XX     X         ',
+        '                 X          ',
         '  P                         ',
-        'XXXXXXXX  XXXXXX  XX  XXXX  ']
+        'XXXXXXXX  XXXXXX XXX  XXXX  ']
 
         self.tile_size = 64
         self.screen_width = 744
