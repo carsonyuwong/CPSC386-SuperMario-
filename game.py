@@ -1,10 +1,10 @@
+import sys
 import pygame as pg
 from settings import Settings
 from sound import Sound
 from button import Button
-from tiles import Tile
 from level import Level
-import sys
+from game_data import level_0
 
 
 class Game:
@@ -21,7 +21,7 @@ class Game:
         self.play_button = Button(game=self, msg="1 PLAYER GAME")
         self.sound = Sound(bg_music="sounds/theme.wav")
 
-        self.level = Level(self.settings.level_map, self.screen)
+        self.level = Level(level_0, self.screen)
 
     def event_handler(self):
         for event in pg.event.get():

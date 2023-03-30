@@ -4,21 +4,10 @@ class Settings():
         self.game = game
         self.game_active = False
 
-        self.bg_color = (107, 140, 255)
+        self.bg_color = (92, 148, 252)
 
-        self.level_map = [
-        '                            ',
-        '       XXXXX                ',
-        '                 X          ',
-        '             X   XXXXX      ',
-        '             X         X   X',
-        '                          X ',
-        '                    XXXX    ',
-        '           XX     X         ',
-        '                 X          ',
-        '  P                         ',
-        'XXXXXXXX  XXXXXX XXX  XXXX  ']
+        self.vertical_tile_number = 30
+        self.tile_size = 16
 
-        self.tile_size = 64
-        self.screen_width = 744
-        self.screen_height = len(self.level_map) * self.tile_size
+        self.screen_height = self.vertical_tile_number * self.tile_size
+        self.screen_width = 320

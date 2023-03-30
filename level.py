@@ -1,54 +1,99 @@
 import pygame as pg
-from tiles import Tile
+from support import import_csv_layout, import_cut_graphics
 from settings import Settings
+from tiles import StaticTile
 from mario import Mario
 
 
-class Level:
+class Level():
     def __init__(self, level_data, surface):
         self.settings = Settings(game=self)
-
+        self.tile_size = self.settings.tile_size
         self.display_surface = surface
-        self.setup_level(level_data)
         self.world_shift = 0
-        self.current_x = 0
 
-    def setup_level(self, layout):
-        self.tiles = pg.sprite.Group()
+        mario_layout = import_csv_layout(level_data['player'])
         self.mario = pg.sprite.GroupSingle()
+        self.mario_setup(mario_layout)
+
+        blocks_layout = import_csv_layout(level_data['blocks'])
+        self.blocks_sprites = self.create_tile_group(blocks_layout, 'blocks')
+
+        deco_layout = import_csv_layout(level_data['deco'])
+        self.deco_sprites = self.create_tile_group(deco_layout, 'deco')
+
+        coins_layout = import_csv_layout(level_data['coins'])
+        self.coins_sprites = self.create_tile_group(coins_layout, 'coins')
+
+        enemies_layout = import_csv_layout(level_data['enemies'])
+        self.enemies_sprites = self.create_tile_group(enemies_layout, 'enemies')
+
+        player_layout = import_csv_layout(level_data['player'])
+        self.player_sprites = self.create_tile_group(player_layout, 'player')
+
+    def create_tile_group(self, layout, type):
+        sprite_group = pg.sprite.Group()
 
         for row_index, row in enumerate(layout):
-            for col_index, cell in enumerate(row):
-                x = col_index * self.settings.tile_size
-                y = row_index * self.settings.tile_size
+            for col_index, val in enumerate(row):
+                if val != '-1':
+                    x = col_index * self.tile_size
+                    y = row_index * self.tile_size
 
-                if cell == 'X':
-                    tile = Tile((x, y), self.settings.tile_size)
-                    self.tiles.add(tile)
-                if cell == 'P':
-                    mario_sprite = Mario((x, y))
-                    self.mario.add(mario_sprite)
+                    if type == 'blocks':
+                        blocks_tile_list = import_cut_graphics('images\\blocks.png')
+                        tile_surface = blocks_tile_list[int(val)]
+                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                    if type == 'deco':
+                        deco_tile_list = import_cut_graphics('images\\deco.png')
+                        tile_surface = deco_tile_list[int(val)]
+                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                    if type == 'coins':
+                        coins_tile_list = import_cut_graphics('images\\coins.png')
+                        tile_surface = coins_tile_list[int(val)]
+                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                    if type == 'enemies':
+                        enemies_tile_list = import_cut_graphics('images\\enemies.png')
+                        tile_surface = enemies_tile_list[int(val)]
+                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                    if type == 'player':
+                        player_tile_list = import_cut_graphics('images\\player.png')
+                        tile_surface = player_tile_list[int(val)]
+                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                    
+                    sprite_group.add(sprite)
+
+        return sprite_group
+    
+    def mario_setup(self, layout):
+        for row_index, row in enumerate(layout):
+            for col_index, val in enumerate(row):
+                x = col_index * self.tile_size
+                y = row_index * self.tile_size
+                if val == '0':
+                    sprite = Mario((x, y))
+                    self.mario.add(sprite)
 
     def scroll_x(self):
         mario = self.mario.sprite
         mario_x = mario.rect.centerx
         direction_x = mario.direction.x
 
-        if mario_x < self.settings.screen_width / 4 and direction_x < 0:
-            self.world_shift = 8
-            mario.speed = 0
-        elif mario_x > self.settings.screen_width - (self.settings.screen_width / 4) and direction_x > 0:
-            self.world_shift = -8
-            mario.speed = 0
+        if mario_x < self.settings.screen_width / 2 and direction_x < 0:
+            self.world_shift = 4
+            mario.current_speed = 0
+        elif mario_x > self.settings.screen_width - (self.settings.screen_width / 2) and direction_x > 0:
+            self.world_shift = -4
+            mario.current_speed = 0
         else:
             self.world_shift = 0
-            mario.speed = 8
-
+            mario.current_speed = mario.default_speed
+    
     def horizontal_movement_collision(self):
         mario = self.mario.sprite
-        mario.rect.x += mario.direction.x * mario.speed
+        mario.rect.x += mario.direction.x * mario.current_speed
 
-        for sprite in self.tiles.sprites():
+        for sprite in self.blocks_sprites.sprites():
             if sprite.rect.colliderect(mario.rect):
                 if mario.direction.x < 0:
                     mario.rect.left = sprite.rect.right
@@ -68,7 +113,7 @@ class Level:
         mario = self.mario.sprite
         mario.apply_gravity()
 
-        for sprite in self.tiles.sprites():
+        for sprite in self.blocks_sprites.sprites():
             if sprite.rect.colliderect(mario.rect):
                 if mario.direction.y > 0:
                     mario.rect.bottom = sprite.rect.top
@@ -83,13 +128,26 @@ class Level:
                 mario.on_ground = False
             if mario.on_ceiling and mario.direction.y > 0:
                 mario.on_ceiling = False
-
+    
     def run(self):
-        self.tiles.update(self.world_shift)
-        self.tiles.draw(self.display_surface)
-        self.scroll_x()
+        self.blocks_sprites.update(self.world_shift)
+        self.blocks_sprites.draw(self.display_surface)
+
+        self.deco_sprites.update(self.world_shift)
+        self.deco_sprites.draw(self.display_surface)
+
+        self.coins_sprites.update(self.world_shift)
+        self.coins_sprites.draw(self.display_surface)
+
+        self.enemies_sprites.update(self.world_shift)
+        self.enemies_sprites.draw(self.display_surface)
+
+        self.player_sprites.update(self.world_shift)
+        self.player_sprites.draw(self.display_surface)
 
         self.mario.update()
+        self.mario.draw(self.display_surface)
+
         self.horizontal_movement_collision()
         self.vertical_movement_collision()
-        self.mario.draw(self.display_surface)
+        self.scroll_x()

@@ -1,6 +1,7 @@
 import pygame as pg
 from support import import_folder
 
+
 class Mario(pg.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
@@ -9,11 +10,12 @@ class Mario(pg.sprite.Sprite):
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
-        
+
         self.direction = pg.math.Vector2(0, 0)
-        self.speed = 8
+        self.default_speed = 4
+        self.current_speed = 0
         self.gravity = 0.8
-        self.jump_height = -16
+        self.jump_height = -11
 
         self.status = 'idle'
         self.facing_right = True
