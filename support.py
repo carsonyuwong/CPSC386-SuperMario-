@@ -33,7 +33,7 @@ def import_cut_graphics(path):
         for col in range(tile_num_x):
             x = col * 16
             y = row * 16
-            new_surf = pg.Surface((16, 16))
+            new_surf = pg.Surface((16, 16), flags = pg.SRCALPHA)
             new_surf.blit(surface, (0, 0), pg.Rect(x, y, 16, 16))
             cut_tiles.append(new_surf)
 

@@ -1,8 +1,9 @@
 import pygame as pg
 from support import import_csv_layout, import_cut_graphics
 from settings import Settings
-from tiles import StaticTile
+from tiles import Tile, StaticTile
 from mario import Mario
+from enemy import Enemy
 
 
 class Level():
@@ -28,6 +29,9 @@ class Level():
         enemies_layout = import_csv_layout(level_data['enemies'])
         self.enemies_sprites = self.create_tile_group(enemies_layout, 'enemies')
 
+        boundry_layout = import_csv_layout(level_data['boundry'])
+        self.boundry_sprites = self.create_tile_group(boundry_layout, 'boundry')
+
         player_layout = import_csv_layout(level_data['player'])
         self.player_sprites = self.create_tile_group(player_layout, 'player')
 
@@ -44,18 +48,23 @@ class Level():
                         blocks_tile_list = import_cut_graphics('images\\blocks.png')
                         tile_surface = blocks_tile_list[int(val)]
                         sprite = StaticTile(self.tile_size, x, y, tile_surface)
+
                     if type == 'deco':
                         deco_tile_list = import_cut_graphics('images\\deco.png')
                         tile_surface = deco_tile_list[int(val)]
                         sprite = StaticTile(self.tile_size, x, y, tile_surface)
+
                     if type == 'coins':
                         coins_tile_list = import_cut_graphics('images\\coins.png')
                         tile_surface = coins_tile_list[int(val)]
                         sprite = StaticTile(self.tile_size, x, y, tile_surface)
+
                     if type == 'enemies':
-                        enemies_tile_list = import_cut_graphics('images\\enemies.png')
-                        tile_surface = enemies_tile_list[int(val)]
-                        sprite = StaticTile(self.tile_size, x, y, tile_surface)
+                        sprite = Enemy(self.tile_size, x, y)
+
+                    if type == 'boundry':
+                        sprite = Tile(self.tile_size, x, y)
+
                     if type == 'player':
                         player_tile_list = import_cut_graphics('images\\player.png')
                         tile_surface = player_tile_list[int(val)]
@@ -128,22 +137,44 @@ class Level():
                 mario.on_ground = False
             if mario.on_ceiling and mario.direction.y > 0:
                 mario.on_ceiling = False
+
+    def enemy_collision_reverse(self):
+        for enemy in self.enemies_sprites.sprites():
+            if pg.sprite.spritecollide(enemy, self.boundry_sprites, False):
+                enemy.reverse()
+
+    def check_enemy_collision(self):
+        enemy_collisions = pg.sprite.spritecollide(self.mario.sprite, self.enemies_sprites, False)
+
+        if enemy_collisions:
+            for enemy in enemy_collisions:
+                enemy_center = enemy.rect.centery
+                enemy_top = enemy.rect.top
+                mario_bottom = self.mario.sprite.rect.bottom
+                if enemy_top < mario_bottom < enemy_center and self.mario.sprite.direction.y >= 0:
+                    self.mario.sprite.direction.y = -10
+                    enemy.kill()
+                else:
+                    print("touch")
     
     def run(self):
-        self.blocks_sprites.update(self.world_shift)
-        self.blocks_sprites.draw(self.display_surface)
-
         self.deco_sprites.update(self.world_shift)
         self.deco_sprites.draw(self.display_surface)
+
+        self.blocks_sprites.update(self.world_shift)
+        self.blocks_sprites.draw(self.display_surface)
 
         self.coins_sprites.update(self.world_shift)
         self.coins_sprites.draw(self.display_surface)
 
-        self.enemies_sprites.update(self.world_shift)
-        self.enemies_sprites.draw(self.display_surface)
-
         self.player_sprites.update(self.world_shift)
         self.player_sprites.draw(self.display_surface)
+
+        self.enemies_sprites.update(self.world_shift)
+        self.boundry_sprites.update(self.world_shift)
+        self.enemy_collision_reverse()
+        self.check_enemy_collision()
+        self.enemies_sprites.draw(self.display_surface)
 
         self.mario.update()
         self.mario.draw(self.display_surface)
